@@ -79,7 +79,7 @@ export const Landing = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => 
       </section>
 
       {/* Tracking Feature */}
-      <section className="flex flex-col lg:flex-row items-center gap-12 bg-white rounded-3xl p-10 shadow-ambient border border-outline-variant/30">
+      <section className="flex flex-col lg:flex-row items-center gap-12 bg-surface-container-low rounded-3xl p-10 shadow-ambient border border-outline-variant/30">
         <div className="flex-1 space-y-6">
           <h2 className="text-4xl font-display font-bold text-primary">Track your joy in real-time.</h2>
           <p className="text-lg text-on-surface-variant">
@@ -145,7 +145,7 @@ const CategoryCard = ({ icon, title, desc, color }: { icon: any, title: string, 
 );
 
 const VendorCard = ({ title, img, rating, reviews }: { title: string, img: string, rating: number, reviews: number }) => (
-  <div className="min-w-[340px] bg-white rounded-2xl shadow-ambient overflow-hidden snap-start cursor-pointer group hover:-translate-y-2 transition-transform">
+  <div className="min-w-[340px] bg-surface-container-lowest rounded-2xl shadow-ambient overflow-hidden snap-start cursor-pointer group hover:-translate-y-2 transition-transform">
     <div className="h-48 overflow-hidden relative">
       <img src={img} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
       <div className="absolute top-4 left-4 glass-panel px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
