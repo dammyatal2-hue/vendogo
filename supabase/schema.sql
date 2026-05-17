@@ -85,3 +85,36 @@ $$ language plpgsql;
 create trigger vendor_trust_score_trigger
   before insert or update on vendor_profiles
   for each row execute function update_trust_score();
+
+-- ─── Client / Customer Profiles ──────────────────────────────────────────────
+
+create table if not exists client_profiles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  full_name text,
+  phone text,
+  email text,
+  avatar_url text,
+  -- address
+  address text,
+  state text,
+  delivery_notes text,
+  -- preferences
+  categories text[] default '{}',
+  -- payment
+  preferred_payment text,
+  -- notifications
+  notif_order_updates boolean default true,
+  notif_promotions boolean default false,
+  notif_delivery_tracking boolean default true,
+  notif_vendor_messages boolean default true,
+  -- meta
+  onboarding_completed boolean default false,
+  joined_date timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table client_profiles enable row level security;
+
+create policy "Clients can manage own profile"
+  on client_profiles for all using (auth.uid() = user_id);

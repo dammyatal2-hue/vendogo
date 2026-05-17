@@ -25,8 +25,9 @@ export const Landing = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => 
           <p className="text-lg text-on-surface-variant max-w-lg">
             Experience premium shopping from your favorite local vendors, all in one place. Fast, reliable, and uniquely VendoGo.
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <button onClick={() => onNavigate('marketplace')} className="btn-primary">Get Started</button>
+            <button onClick={() => onNavigate('client-onboarding')} className="btn-secondary">Create Account</button>
             <button onClick={() => onNavigate('vendor-onboarding')} className="btn-ghost">Sell on VendoGo</button>
           </div>
         </div>
