@@ -113,19 +113,19 @@ export const Landing = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => 
 
       {/* CTA Section */}
       <section className="grid md:grid-cols-2 gap-8">
-        <div className="bg-primary-container rounded-3xl p-12 text-white relative overflow-hidden group">
+        <div className="bg-primary rounded-3xl p-12 text-white relative overflow-hidden group">
           <div className="relative z-10 space-y-4">
-            <h3 className="text-4xl font-display font-bold">Sell on VendoGo</h3>
-            <p className="text-primary-fixed-dim text-lg">Grow your local business by reaching thousands of premium customers in your city.</p>
+            <h3 className="text-4xl font-display font-bold text-white">Sell on VendoGo</h3>
+            <p className="text-white/70 text-lg">Grow your local business by reaching thousands of premium customers in your city.</p>
             <button onClick={() => onNavigate('vendor-onboarding')} className="btn-secondary mt-4">Start Selling</button>
           </div>
           <Store className="absolute -bottom-10 -right-10 w-64 h-64 text-white/10 group-hover:rotate-12 transition-transform duration-500" />
         </div>
-        <div className="bg-primary-container rounded-3xl p-12 text-white relative overflow-hidden group">
+        <div className="bg-primary rounded-3xl p-12 text-white relative overflow-hidden group">
           <div className="relative z-10 space-y-4">
-            <h3 className="text-4xl font-display font-bold">Ride for VendoGo</h3>
-            <p className="text-primary-fixed-dim text-lg">Enjoy flexible hours, competitive pay, and the best support team in the logistics game.</p>
-            <button onClick={() => onNavigate('rider-onboarding')} className="bg-white text-primary px-8 py-3 rounded-md font-semibold hover:bg-surface-container-low transition-all mt-4">Join the Fleet</button>
+            <h3 className="text-4xl font-display font-bold text-white">Ride for VendoGo</h3>
+            <p className="text-white/70 text-lg">Enjoy flexible hours, competitive pay, and the best support team in the logistics game.</p>
+            <button onClick={() => onNavigate('rider-onboarding')} className="btn-secondary mt-4">Join the Fleet</button>
           </div>
           <Bike className="absolute -bottom-10 -right-10 w-64 h-64 text-white/10 group-hover:rotate-12 transition-transform duration-500" />
         </div>
