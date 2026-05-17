@@ -19,7 +19,7 @@ import {
 
 export const CustomerDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
   return (
-    <div className="pt-20 px-4 md:px-10 max-w-7xl mx-auto space-y-6 md:space-y-10 pb-32">
+    <div className="pt-20 px-4 md:px-10 max-w-7xl mx-auto space-y-6 md:space-y-10 pb-32 overflow-x-hidden w-full">
       {/* Profile Header */}
       <div className="flex flex-col md:flex-row items-center gap-5 md:gap-8 bg-white p-6 md:p-10 rounded-3xl md:rounded-[40px] shadow-ambient border border-outline-variant/30">
          <div className="relative group">
@@ -54,16 +54,16 @@ export const CustomerDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => v
          </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10 w-full min-w-0">
          {/* Main Content: Orders & Favorites */}
-         <div className="lg:col-span-2 space-y-8 md:space-y-12">
+         <div className="lg:col-span-2 space-y-8 md:space-y-12 min-w-0 w-full">
             {/* Active Orders */}
-            <section className="space-y-6">
-               <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-display font-bold text-primary">Active Orders</h2>
-                  <div className="h-[1px] flex-1 bg-outline-variant mx-6 opacity-30"></div>
+            <section className="space-y-4 w-full min-w-0">
+               <div className="flex items-center gap-3">
+                  <h2 className="text-xl md:text-2xl font-display font-bold text-primary whitespace-nowrap">Active Orders</h2>
+                  <div className="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
                </div>
-               <div className="bg-primary/5 border border-primary/10 rounded-3xl p-5 md:p-8 space-y-5 md:space-y-6 relative overflow-hidden group">
+               <div className="bg-primary/5 border border-primary/10 rounded-2xl md:rounded-3xl p-4 md:p-8 space-y-4 md:space-y-6 relative overflow-hidden group w-full">
                   <div className="flex justify-between items-start">
                      <div className="space-y-1">
                         <div className="flex items-center gap-2 text-primary">
@@ -71,7 +71,7 @@ export const CustomerDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => v
                            <span className="font-bold">On the way</span>
                         </div>
                         <h3 className="text-base md:text-xl font-bold text-primary">Order #VG-19283</h3>
-                        <p className="text-sm text-on-surface-variant">Arriving in approx. 12 mins • 3 Items</p>
+                           <p className="text-xs md:text-sm text-on-surface-variant">Arriving in approx. 12 mins • 3 Items</p>
                      </div>
                      <button className="p-3 bg-white rounded-full shadow-sm hover:scale-110 transition-transform"><ChevronRight /></button>
                   </div>
@@ -91,9 +91,9 @@ export const CustomerDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => v
             </section>
 
             {/* Favorite Vendors */}
-            <section className="space-y-6">
+            <section className="space-y-4 w-full min-w-0">
                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-display font-bold text-primary">Favorite Vendors</h2>
+                  <h2 className="text-xl md:text-2xl font-display font-bold text-primary">Favorite Vendors</h2>
                   <button className="flex items-center gap-2 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">
                      Manage List <ArrowRight className="w-4 h-4" />
                   </button>
@@ -113,9 +113,9 @@ export const CustomerDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => v
             </section>
 
             {/* Recent Orders Table */}
-            <section className="space-y-6">
-               <h2 className="text-2xl font-display font-bold text-primary">Order History</h2>
-               <div className="bg-white rounded-3xl border border-outline-variant/30 shadow-ambient overflow-hidden">
+            <section className="space-y-4 w-full min-w-0">
+               <h2 className="text-xl md:text-2xl font-display font-bold text-primary">Order History</h2>
+               <div className="bg-white rounded-2xl md:rounded-3xl border border-outline-variant/30 shadow-ambient overflow-hidden w-full">
                   {[1,2,3,4].map(i => (
                     <div key={i} className="flex items-center justify-between p-4 md:p-6 border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors cursor-pointer last:border-0 group">
                        <div className="flex items-center gap-3 md:gap-4">
@@ -138,7 +138,7 @@ export const CustomerDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => v
          </div>
 
          {/* Sidebar: Subscriptions & Rewards */}
-         <div className="space-y-8">
+         <div className="space-y-6 md:space-y-8 w-full min-w-0">
             <div className="bg-secondary-fixed rounded-3xl p-6 md:p-8 space-y-6 shadow-ambient border border-secondary shadow-lg shadow-secondary/10 relative overflow-hidden group">
                <div className="relative z-10 space-y-4">
                   <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-md">
