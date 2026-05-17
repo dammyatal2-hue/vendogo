@@ -14,18 +14,30 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
+import { TrustScore } from '../components/TrustScore';
+import { VerificationBadges, VendorLevelBadge } from '../components/VerificationBadges';
+import { BadgeType } from '../lib/types';
 
 export const VendorDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
+  const mockBadges: BadgeType[] = ['verified_seller', 'fast_delivery'];
+  const mockTrustScore = 45;
+
   return (
     <div className="pt-24 px-4 md:px-10 max-w-7xl mx-auto space-y-10 pb-24">
       {/* Welcome & Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-           <h1 className="text-4xl font-display font-bold text-primary">Kilele Organics</h1>
+           <div className="flex items-center gap-3 flex-wrap">
+             <h1 className="text-4xl font-display font-bold text-primary">Kilele Organics</h1>
+             <VendorLevelBadge level="Verified Seller" />
+           </div>
            <p className="text-on-surface-variant flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
               Live: 24 active orders
            </p>
+           <div className="pt-1">
+             <VerificationBadges badges={mockBadges} />
+           </div>
         </div>
         <div className="flex gap-4">
            <button className="btn-ghost flex items-center gap-2 h-14">
@@ -111,7 +123,7 @@ export const VendorDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => voi
                <h2 className="text-2xl font-display font-bold text-primary">Performance</h2>
                <div className="bg-primary rounded-3xl p-8 text-white space-y-6 shadow-xl">
                   <div className="space-y-2">
-                     <p className="text-xs uppercase tracking-widest text-primary-fixed-dim font-bold">Health Score</p>
+                     <p className="text-xs uppercase tracking-widest text-white/60 font-bold">Health Score</p>
                      <p className="text-4xl font-display font-bold">94/100</p>
                   </div>
                   <div className="space-y-3">
@@ -126,6 +138,9 @@ export const VendorDashboard = ({ onNavigate }: { onNavigate: (s: Screen) => voi
                   <button className="w-full py-3 bg-white/10 hover:bg-white/20 transition-colors rounded-xl text-sm font-bold border border-white/20">
                      View Breakdown
                   </button>
+               </div>
+               <div className="bg-surface-container-low rounded-3xl p-6 border border-outline-variant/20 space-y-3">
+                  <TrustScore score={mockTrustScore} />
                </div>
             </div>
 
