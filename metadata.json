@@ -1,0 +1,6 @@
+{
+  "name": "VendoGo",
+  "description": "Premium multi-vendor marketplace featuring real-time delivery tracking, seamless vendor onboarding, and specialized dashboards for riders, vendors, and customers. Built with a focus on high-fidelity visual design and smooth user journeys.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
