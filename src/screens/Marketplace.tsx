@@ -131,10 +131,26 @@ export const Marketplace = ({ onNavigate }: { onNavigate: (s: Screen) => void })
                     </div>
                  </div>
                  <div className="pt-2 border-t border-outline-variant/30 flex items-center justify-between">
-                   <p className="text-xs text-on-surface-variant font-medium">By {product.vendor}</p>
-                   <button className="p-2 rounded-full bg-surface-container-low hover:bg-primary hover:text-white transition-all active:scale-90">
-                      <ShoppingBag className="w-4 h-4" />
+                   <button
+                     onClick={e => { e.stopPropagation(); onNavigate('vendor-profile'); }}
+                     className="text-xs text-primary font-bold hover:underline"
+                   >
+                     {product.vendor}
                    </button>
+                   <div className="flex items-center gap-1">
+                     <button
+                       onClick={e => { e.stopPropagation(); onNavigate('vendor-profile'); }}
+                       className="text-[10px] font-bold text-on-surface-variant hover:text-primary transition-colors px-2 py-1 rounded-lg hover:bg-surface-container-low"
+                     >
+                       View Store
+                     </button>
+                     <button
+                       onClick={e => e.stopPropagation()}
+                       className="p-2 rounded-full bg-surface-container-low hover:bg-primary hover:text-white transition-all active:scale-90"
+                     >
+                       <ShoppingBag className="w-4 h-4" />
+                     </button>
+                   </div>
                  </div>
               </div>
            </div>
