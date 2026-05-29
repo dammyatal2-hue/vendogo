@@ -21,6 +21,8 @@ import { Checkout } from './screens/Checkout';
 import { VendorOnboarding } from './screens/VendorOnboarding';
 import { RiderOnboarding } from './screens/RiderOnboarding';
 import { ClientOnboarding } from './screens/ClientOnboarding';
+import { VendorProfile } from './screens/VendorProfile';
+import { VendorStore } from './screens/VendorStore';
 
 // --- Types ---
 export type Screen = 
@@ -33,7 +35,9 @@ export type Screen =
   | 'checkout'
   | 'vendor-onboarding'
   | 'rider-onboarding'
-  | 'client-onboarding';
+  | 'client-onboarding'
+  | 'vendor-profile'
+  | 'vendor-store';
 
 // --- Global Components ---
 const TopAppBar = ({ title, showBack, onBack, onNavigate }: { title?: string, showBack?: boolean, onBack?: () => void, onNavigate: (s: Screen) => void }) => (
@@ -146,7 +150,9 @@ export default function App() {
                currentScreen === 'rider-dashboard' ? 'Rider Ops' : 
                currentScreen === 'vendor-onboarding' ? 'Vendor Portal' :
                currentScreen === 'rider-onboarding' ? 'Rider Portal' :
-               currentScreen === 'client-onboarding' ? 'Get Started' : undefined}
+               currentScreen === 'client-onboarding' ? 'Get Started' :
+               currentScreen === 'vendor-profile' ? 'Vendor Profile' :
+               currentScreen === 'vendor-store' ? 'Store' : undefined}
       />
       
       <main className="min-h-screen pb-24">
@@ -168,6 +174,8 @@ export default function App() {
             {currentScreen === 'vendor-onboarding' && <VendorOnboarding onNavigate={navigate} />}
             {currentScreen === 'rider-onboarding' && <RiderOnboarding onNavigate={navigate} />}
             {currentScreen === 'client-onboarding' && <ClientOnboarding onNavigate={navigate} />}
+            {currentScreen === 'vendor-profile' && <VendorProfile onNavigate={navigate} />}
+            {currentScreen === 'vendor-store' && <VendorStore onNavigate={navigate} />}
           </motion.div>
         </AnimatePresence>
       </main>
