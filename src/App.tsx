@@ -23,6 +23,7 @@ import { RiderOnboarding } from './screens/RiderOnboarding';
 import { ClientOnboarding } from './screens/ClientOnboarding';
 import { VendorProfile } from './screens/VendorProfile';
 import { VendorStore } from './screens/VendorStore';
+import { Login } from './screens/Login';
 
 // --- Types ---
 export type Screen = 
@@ -37,7 +38,8 @@ export type Screen =
   | 'rider-onboarding'
   | 'client-onboarding'
   | 'vendor-profile'
-  | 'vendor-store';
+  | 'vendor-store'
+  | 'login';
 
 // --- Global Components ---
 const TopAppBar = ({ title, showBack, onBack, onNavigate }: { title?: string, showBack?: boolean, onBack?: () => void, onNavigate: (s: Screen) => void }) => (
@@ -176,6 +178,7 @@ export default function App() {
             {currentScreen === 'client-onboarding' && <ClientOnboarding onNavigate={navigate} />}
             {currentScreen === 'vendor-profile' && <VendorProfile onNavigate={navigate} />}
             {currentScreen === 'vendor-store' && <VendorStore onNavigate={navigate} />}
+            {currentScreen === 'login' && <Login onNavigate={navigate} />}
           </motion.div>
         </AnimatePresence>
       </main>
