@@ -1,14 +1,29 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Screen } from '../App';
 import { MapPin, Eye, EyeOff, ChevronRight, MessageCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export const Login = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setIsSubmitting(false);
+
+    if (signInError) {
+      setError(signInError.message);
+      return;
+    }
     onNavigate('marketplace');
   };
 
@@ -66,8 +81,13 @@ export const Login = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
               </div>
             </div>
 
-            <button type="submit" className="btn-primary w-full h-14 text-base shadow-lg shadow-primary/20 mt-2">
-              Sign In <ChevronRight className="w-5 h-5" />
+            {error && (
+              <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl p-3">
+                {error}
+              </p>
+            )}
+            <button disabled={isSubmitting} type="submit" className="btn-primary w-full h-14 text-base shadow-lg shadow-primary/20 mt-2 disabled:opacity-50">
+              {isSubmitting ? 'Signing in…' : 'Sign In'} <ChevronRight className="w-5 h-5" />
             </button>
           </form>
 

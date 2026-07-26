@@ -119,7 +119,14 @@ export const ProductDetail = ({ onNavigate }: { onNavigate: (s: Screen) => void 
                     <p className="text-sm text-on-surface-variant">Lagos, Trusted since 2019</p>
                  </div>
               </div>
-              <button className="btn-ghost px-6 py-2 h-fit">View Store</button>
+              <button
+                type="button"
+                onClick={() => onNavigate('vendor-store')}
+                aria-label="View Kilele Organics store"
+                className="btn-ghost px-6 py-2 h-fit"
+              >
+                View Store
+              </button>
            </div>
         </div>
       </div>

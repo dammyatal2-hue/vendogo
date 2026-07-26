@@ -8,6 +8,7 @@ import {
   Bike, Star, Verified, Package, Zap, Shield,
   ToggleLeft, ToggleRight, Store, Heart, Coffee
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -18,6 +19,7 @@ interface OnboardingData {
   phone: string;
   email: string;
   address: string;
+  state: string;
   deliveryNotes: string;
   categories: string[];
   paymentMethod: PaymentMethod | '';
@@ -34,6 +36,7 @@ const INITIAL_DATA: OnboardingData = {
   phone: '',
   email: '',
   address: '',
+  state: 'Lagos',
   deliveryNotes: '',
   categories: [],
   paymentMethod: '',
@@ -222,7 +225,7 @@ const StepAddress = ({ data, onChange }: { data: OnboardingData; onChange: (d: P
     </div>
     <div className="space-y-2">
       <label className="text-sm font-bold text-primary ml-1">State</label>
-      <select className="input-field appearance-none">
+      <select value={data.state} onChange={e => onChange({ state: e.target.value })} className="input-field appearance-none">
         <option>Lagos</option><option>Abuja</option><option>Rivers</option>
         <option>Oyo</option><option>Kano</option><option>Other</option>
       </select>
@@ -416,9 +419,46 @@ const StepComplete = ({ data, onNavigate }: { data: OnboardingData; onNavigate: 
 export const ClientOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
   const [step, setStep] = useState<number>(1);
   const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const update = (partial: Partial<OnboardingData>) => setData(d => ({ ...d, ...partial }));
   const next = () => setStep(s => Math.min(s + 1, STEPS.length));
+  const finish = async () => {
+    setError('');
+    setIsSubmitting(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsSubmitting(false);
+      setError('Please sign in before saving your customer profile.');
+      return;
+    }
+
+    const { error: saveError } = await supabase.from('client_profiles').upsert({
+      user_id: user.id,
+      full_name: data.fullName,
+      phone: data.phone,
+      email: data.email || user.email,
+      address: data.address,
+      state: data.state,
+      delivery_notes: data.deliveryNotes,
+      categories: data.categories,
+      preferred_payment: data.paymentMethod || null,
+      notif_order_updates: data.notifications.orderUpdates,
+      notif_promotions: data.notifications.promotions,
+      notif_delivery_tracking: data.notifications.deliveryTracking,
+      notif_vendor_messages: data.notifications.vendorMessages,
+      onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+
+    setIsSubmitting(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    next();
+  };
   const back = () => setStep(s => Math.max(s - 1, 1));
   const skip = () => next();
 
@@ -507,10 +547,13 @@ export const ClientOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
-              <button onClick={next} className="btn-primary px-8 h-12 shadow-md shadow-primary/20">
-                {step === 6 ? 'Finish' : 'Continue'}
+              <div className="flex flex-col items-end gap-2">
+              {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+              <button disabled={isSubmitting} onClick={step === 6 ? finish : next} className="btn-primary px-8 h-12 shadow-md shadow-primary/20 disabled:opacity-50">
+                {isSubmitting ? 'Saving…' : step === 6 ? 'Finish' : 'Continue'}
                 <ChevronRight className="w-4 h-4" />
               </button>
+              </div>
             </div>
           )}
         </div>
