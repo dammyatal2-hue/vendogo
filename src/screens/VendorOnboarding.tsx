@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { NIGERIAN_BANKS, computeTrustScore, getVendorLevel, SocialLinks } from '../lib/types';
 import { TrustScore } from '../components/TrustScore';
 import { VerificationBadges, VendorLevelBadge } from '../components/VerificationBadges';
+import { supabase } from '../lib/supabase';
 
 const STEPS = [
   { id: 1, title: 'Identity',   desc: 'Tell us about your business',  icon: <Building /> },
@@ -21,6 +22,14 @@ const STEPS = [
 export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [category, setCategory] = useState('Groceries');
+  const [description, setDescription] = useState('');
+  const [state, setState] = useState('Lagos');
+  const [city, setCity] = useState('');
+  const [deliveryRadius, setDeliveryRadius] = useState('');
 
   // Step 3 — Phone
   const [phone, setPhone] = useState('');
@@ -32,7 +41,6 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
-  const [fetchingAccount, setFetchingAccount] = useState(false);
 
   // Step 5 — Social + Student
   const [social, setSocial] = useState<SocialLinks>({});
@@ -41,44 +49,89 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
 
   const trustData = {
     phone_verified: phoneVerified,
-    account_name: accountName || undefined,
-    social_verified: !!(social.instagram || social.tiktok || social.whatsapp),
-    student_verified: isStudent && !!schoolName,
+    social_verified: false,
+    student_verified: false,
   };
   const trustScore = computeTrustScore(trustData);
   const vendorLevel = getVendorLevel(trustScore);
 
-  const handleSendOtp = () => {
-    if (phone.length >= 10) setOtpSent(true);
+  const normalizedPhone = `+234${phone.replace(/\D/g, '').replace(/^0/, '')}`;
+
+  const handleSendOtp = async () => {
+    setError('');
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      phone: normalizedPhone,
+    });
+    if (otpError) {
+      setError(otpError.message);
+      return;
+    }
+    setOtpSent(true);
   };
 
-  const handleVerifyOtp = () => {
-    if (otp.length === 6) setPhoneVerified(true);
+  const handleVerifyOtp = async () => {
+    setError('');
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      phone: normalizedPhone,
+      token: otp,
+      type: 'sms',
+    });
+    if (verifyError) {
+      setError(verifyError.message);
+      return;
+    }
+    setPhoneVerified(true);
   };
 
   const handleAccountNumberChange = (val: string) => {
-    setAccountNumber(val);
+    setAccountNumber(val.replace(/\D/g, ''));
     setAccountName('');
-    if (val.length === 10 && bankName) {
-      setFetchingAccount(true);
-      setTimeout(() => {
-        setAccountName('DEMO ACCOUNT NAME');
-        setFetchingAccount(false);
-      }, 1200);
+  };
+
+  const submitApplication = async () => {
+    setError('');
+    setIsSubmitting(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsSubmitting(false);
+      setError('Verify your phone number before submitting.');
+      return;
     }
+
+    const { error: submitError } = await supabase.from('vendor_profiles').upsert({
+      user_id: user.id,
+      business_name: businessName,
+      category,
+      description,
+      state,
+      city,
+      delivery_radius_km: deliveryRadius ? Number(deliveryRadius) : null,
+      phone: normalizedPhone,
+      bank_name: bankName || null,
+      account_number: accountNumber || null,
+      account_name: accountName || null,
+      social_links: social,
+      is_student_vendor: isStudent,
+      school_name: schoolName || null,
+    }, { onConflict: 'user_id' });
+
+    setIsSubmitting(false);
+    if (submitError) {
+      setError(submitError.message);
+      return;
+    }
+    setIsSuccess(true);
   };
 
   const nextStep = () => {
     if (currentStep < STEPS.length) setCurrentStep(s => s + 1);
-    else setIsSuccess(true);
+    else void submitApplication();
   };
   const prevStep = () => { if (currentStep > 1) setCurrentStep(s => s - 1); };
 
   if (isSuccess) {
     const badges = [
       ...(phoneVerified ? ['verified_seller' as const] : []),
-      ...(accountName ? [] : []),
-      ...(isStudent && schoolName ? ['student_vendor' as const] : []),
     ];
     return (
       <div className="pt-24 px-4 flex justify-center items-center min-h-[70vh]">
@@ -152,11 +205,11 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
               <div className="space-y-5 animate-in slide-in-from-right-4 duration-500">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-primary ml-1">Business Name</label>
-                  <input type="text" placeholder="e.g. Kilele Organics" className="input-field" />
+                  <input required type="text" placeholder="e.g. Kilele Organics" value={businessName} onChange={e => setBusinessName(e.target.value)} className="input-field" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-primary ml-1">Category</label>
-                  <select className="input-field appearance-none">
+                  <select value={category} onChange={e => setCategory(e.target.value)} className="input-field appearance-none">
                     <option>Groceries</option>
                     <option>Fashion</option>
                     <option>Electronics</option>
@@ -167,7 +220,7 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-primary ml-1">Business Description</label>
-                  <textarea placeholder="Tell us what makes your store unique..." className="input-field min-h-[100px]" />
+                  <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Tell us what makes your store unique..." className="input-field min-h-[100px]" />
                 </div>
               </div>
             )}
@@ -177,18 +230,18 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
               <div className="space-y-5 animate-in slide-in-from-right-4 duration-500">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-primary ml-1">State</label>
-                  <select className="input-field appearance-none">
+                  <select value={state} onChange={e => setState(e.target.value)} className="input-field appearance-none">
                     <option>Lagos</option><option>Abuja</option><option>Rivers</option>
                     <option>Oyo</option><option>Kano</option><option>Other</option>
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-primary ml-1">City / Area</label>
-                  <input type="text" placeholder="e.g. Yaba, Lagos" className="input-field" />
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Yaba, Lagos" className="input-field" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-primary ml-1">Delivery Radius (km)</label>
-                  <input type="number" placeholder="e.g. 5" className="input-field" />
+                  <input type="number" min="1" value={deliveryRadius} onChange={e => setDeliveryRadius(e.target.value)} placeholder="e.g. 5" className="input-field" />
                 </div>
               </div>
             )}
@@ -278,24 +331,17 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
                     className="input-field"
                   />
                 </div>
-                {fetchingAccount && (
-                  <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    Fetching account name...
-                  </div>
-                )}
-                {accountName && (
-                  <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                    <div>
-                      <p className="text-xs text-green-600 font-bold uppercase tracking-widest">Account Name</p>
-                      <p className="font-bold text-green-700">{accountName}</p>
-                    </div>
-                  </div>
-                )}
-                <p className="text-xs text-on-surface-variant">
-                  Bank verification adds <span className="font-bold text-primary">+20</span> to your trust score
-                </p>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-primary ml-1">Account Name</label>
+                  <input
+                    type="text"
+                    value={accountName}
+                    onChange={e => setAccountName(e.target.value)}
+                    placeholder="Name shown on the account"
+                    className="input-field"
+                  />
+                </div>
+                <p className="text-xs text-on-surface-variant">Your payout details will be verified during application review.</p>
               </div>
             )}
 
@@ -411,10 +457,13 @@ export const VendorOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => vo
             >
               <ArrowLeft className="w-5 h-5" /> Back
             </button>
-            <button onClick={nextStep} className="btn-primary px-10 h-14 shadow-lg shadow-primary/20 text-base">
-              {currentStep === STEPS.length ? 'Submit Application' : 'Next Step'}
+            <div className="flex flex-col items-end gap-2">
+              {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+            <button disabled={isSubmitting || (currentStep === STEPS.length && (!businessName || !phoneVerified))} onClick={nextStep} className="btn-primary px-10 h-14 shadow-lg shadow-primary/20 text-base disabled:opacity-50">
+              {isSubmitting ? 'Submitting…' : currentStep === STEPS.length ? 'Submit Application' : 'Next Step'}
               <ChevronRight className="w-5 h-5 ml-1" />
             </button>
+            </div>
           </div>
         </div>
       </div>

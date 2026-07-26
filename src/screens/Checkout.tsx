@@ -13,10 +13,53 @@ import {
   Plus
 } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 export const Checkout = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
   const [step, setStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [orderNumber, setOrderNumber] = useState('');
+
+  const placeOrder = async () => {
+    setError('');
+    setIsSubmitting(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsSubmitting(false);
+      setError('Please sign in before placing an order.');
+      return;
+    }
+
+    const { data, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        customer_id: user.id,
+        subtotal: 15000,
+        delivery_fee: 2500,
+        tax: 1125,
+        total: 18625,
+        delivery_address: '22 Victoria Island, Apartment 4B, Lagos, Nigeria',
+        payment_method: 'card',
+        items: [{
+          name: 'Premium Hass Avocado Box',
+          quantity: 1,
+          unit_price: 15000,
+        }],
+      })
+      .select('order_number')
+      .single();
+
+    setIsSubmitting(false);
+    if (orderError) {
+      setError(orderError.message);
+      return;
+    }
+    setOrderNumber(data.order_number);
+    setIsSuccess(true);
+  };
 
   if (isSuccess) {
     return (
@@ -27,7 +70,7 @@ export const Checkout = ({ onNavigate }: { onNavigate: (s: Screen) => void }) =>
             </div>
             <div className="space-y-2">
                <h1 className="text-3xl font-display font-bold text-primary">Your order is placed!</h1>
-               <p className="text-on-surface-variant font-medium">Order #VG-19283 is being prepared. We'll notify you when it's out for delivery.</p>
+               <p className="text-on-surface-variant font-medium">Order #{orderNumber} is being prepared. We'll notify you when it's out for delivery.</p>
             </div>
             <div className="space-y-4">
                <button onClick={() => onNavigate('customer-dashboard')} className="w-full btn-primary h-14">Track Order</button>
@@ -171,8 +214,9 @@ export const Checkout = ({ onNavigate }: { onNavigate: (s: Screen) => void }) =>
                   </div>
                </div>
 
-               <button onClick={() => setIsSuccess(true)} className="w-full btn-primary h-16 shadow-lg shadow-primary/20 text-lg">
-                  Place Order
+               {error && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl p-3">{error}</p>}
+               <button disabled={isSubmitting} onClick={placeOrder} className="w-full btn-primary h-16 shadow-lg shadow-primary/20 text-lg disabled:opacity-50">
+                  {isSubmitting ? 'Placing Order…' : 'Place Order'}
                   <ShieldCheck className="w-6 h-6 ml-2" />
                </button>
                

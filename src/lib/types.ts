@@ -18,6 +18,7 @@ export interface VendorProfile {
   bank_name: string;
   account_number: string;
   account_name: string;
+  bank_verified: boolean;
   social_links: SocialLinks;
   social_verified: boolean;
   is_student_vendor: boolean;

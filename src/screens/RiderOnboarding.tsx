@@ -12,6 +12,7 @@ import {
   Truck
 } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 const STEPS = [
   { id: 1, title: 'Identity', desc: 'Personal details & ID', icon: <User /> },
@@ -23,10 +24,44 @@ const STEPS = [
 export const RiderOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => void }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [vehicleType, setVehicleType] = useState<'motorcycle' | 'car'>('motorcycle');
+  const [licensePlate, setLicensePlate] = useState('');
+  const [driversLicense, setDriversLicense] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const submitApplication = async () => {
+    setError('');
+    setIsSubmitting(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsSubmitting(false);
+      setError('Please sign in before submitting a rider application.');
+      return;
+    }
+    const { error: saveError } = await supabase.from('rider_applications').upsert({
+      user_id: user.id,
+      first_name: firstName,
+      last_name: lastName,
+      email: email || user.email,
+      vehicle_type: vehicleType,
+      license_plate: licensePlate,
+      drivers_license: driversLicense,
+    }, { onConflict: 'user_id' });
+    setIsSubmitting(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    setIsSuccess(true);
+  };
 
   const nextStep = () => {
     if (currentStep < 4) setCurrentStep(currentStep + 1);
-    else setIsSuccess(true);
+    else void submitApplication();
   };
 
   const prevStep = () => {
@@ -92,16 +127,16 @@ export const RiderOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => voi
                    <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                          <label className="text-sm font-bold text-primary ml-1">First Name</label>
-                         <input type="text" placeholder="James" className="input-field" />
+                         <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="James" className="input-field" />
                       </div>
                       <div className="space-y-2">
                          <label className="text-sm font-bold text-primary ml-1">Last Name</label>
-                         <input type="text" placeholder="Ige" className="input-field" />
+                         <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Ige" className="input-field" />
                       </div>
                    </div>
                    <div className="space-y-2">
                       <label className="text-sm font-bold text-primary ml-1">Email Address</label>
-                      <input type="email" placeholder="james.ige@example.com" className="input-field" />
+                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="james.ige@example.com" className="input-field" />
                    </div>
                    <div className="space-y-2">
                       <label className="text-sm font-bold text-primary ml-1">National ID / Passport</label>
@@ -116,16 +151,16 @@ export const RiderOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => voi
               {currentStep === 2 && (
                 <div className="space-y-6">
                    <div className="grid grid-cols-2 gap-4">
-                      <VehicleTypeCard icon={<Bike />} label="Motorcycle" active={true} />
-                      <VehicleTypeCard icon={<Truck />} label="Van/Car" />
+                      <VehicleTypeCard onClick={() => setVehicleType('motorcycle')} icon={<Bike />} label="Motorcycle" active={vehicleType === 'motorcycle'} />
+                      <VehicleTypeCard onClick={() => setVehicleType('car')} icon={<Truck />} label="Van/Car" active={vehicleType === 'car'} />
                    </div>
                    <div className="space-y-2">
                       <label className="text-sm font-bold text-primary ml-1">Vehicle License Plate</label>
-                      <input type="text" placeholder="LAG-123-XY" className="input-field" />
+                      <input type="text" value={licensePlate} onChange={e => setLicensePlate(e.target.value)} placeholder="LAG-123-XY" className="input-field" />
                    </div>
                    <div className="space-y-2">
                       <label className="text-sm font-bold text-primary ml-1">Driver's License ID</label>
-                      <input type="text" placeholder="DL-9283-K" className="input-field" />
+                      <input type="text" value={driversLicense} onChange={e => setDriversLicense(e.target.value)} placeholder="DL-9283-K" className="input-field" />
                    </div>
                 </div>
               )}
@@ -148,10 +183,13 @@ export const RiderOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => voi
                  <ArrowLeft className="w-5 h-5" />
                  Back
               </button>
-              <button onClick={nextStep} className="btn-primary px-10 h-16 shadow-lg shadow-primary/20 text-lg">
-                 {currentStep === 4 ? 'Complete Registration' : 'Next Step'}
+              <div className="flex flex-col items-end gap-2">
+              {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+              <button disabled={isSubmitting || (currentStep === 4 && (!firstName || !lastName || !licensePlate || !driversLicense))} onClick={nextStep} className="btn-primary px-10 h-16 shadow-lg shadow-primary/20 text-lg disabled:opacity-50">
+                 {isSubmitting ? 'Submitting…' : currentStep === 4 ? 'Complete Registration' : 'Next Step'}
                  <ChevronRight className="w-5 h-5 ml-2" />
               </button>
+              </div>
            </div>
         </div>
       </div>
@@ -159,11 +197,11 @@ export const RiderOnboarding = ({ onNavigate }: { onNavigate: (s: Screen) => voi
   );
 };
 
-const VehicleTypeCard = ({ icon, label, active }: { icon: any, label: string, active?: boolean }) => (
-  <div className={`p-8 rounded-3xl border-2 flex flex-col items-center gap-4 cursor-pointer transition-all ${
+const VehicleTypeCard = ({ icon, label, active, onClick }: { icon: any, label: string, active?: boolean, onClick: () => void }) => (
+  <button type="button" onClick={onClick} className={`p-8 rounded-3xl border-2 flex flex-col items-center gap-4 cursor-pointer transition-all ${
     active ? 'border-primary bg-primary/5' : 'border-outline-variant/30 bg-white hover:border-primary/40'
   }`}>
      <div className={`scale-150 ${active ? 'text-primary' : 'text-on-surface-variant'}`}>{icon}</div>
      <span className={`font-bold text-sm ${active ? 'text-primary' : 'text-on-surface-variant'}`}>{label}</span>
-  </div>
+  </button>
 );
